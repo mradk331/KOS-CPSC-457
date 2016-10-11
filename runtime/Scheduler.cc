@@ -44,7 +44,9 @@ inline void Scheduler::switchThread(Scheduler* target, Args&... a) {
   CHECK_LOCK_MIN(sizeof...(Args));
   Thread* nextThread;
   readyLock.acquire();
-  for (mword i = 0; i < (target ? idlePriority : maxPriority); i += 1) {
+//  for (mword i = 0; i < (target ? idlePriority : maxPriority); i += 1) {
+  for (mword i = 0; i < ((target == this) ? idlePriority : maxPriority);
+i += 1) {
     if (!readyQueue[i].empty()) {
       nextThread = readyQueue[i].pop_front();
       readyCount -= 1;
@@ -111,11 +113,29 @@ void Scheduler::resume(Thread& t) {
   else Runtime::getScheduler()->enqueue(t);
 }
 
+
+
 void Scheduler::preempt() {               // IRQs disabled, lock count inflated
 #if TESTING_NEVER_MIGRATE
   switchThread(this);
 #else /* migration enabled */
-  Scheduler* target = Runtime::getCurrThread()->getAffinity();
+  //Scheduler* target =  Runtime::getCurrThread()->getAffinity();
+  Scheduler *target = nullptr;
+  mword affinityMask = Runtime::getCurrThread()->getAffinityMask();
+
+  if( affinityMask == 0 ) {
+	  /* use Martin's code when no affinity is set via bit mask */
+	  target =  Runtime::getCurrThread()->getAffinity();
+   }  else {
+	  /* CPSC457l: Add code here to scan the affinity mask
+      * and select the processor with the smallest ready count.
+      * Set the scheduler of the selected processor as target
+      * switchThread(target) migrates the current thread to
+      * specified target's ready queue
+      */
+
+   }
+
 #if TESTING_ALWAYS_MIGRATE
   if (!target) target = partner;
 #else /* simple load balancing */
@@ -142,4 +162,9 @@ void Scheduler::terminate() {
   thr->state = Thread::Finishing;
   switchThread(nullptr);
   unreachable();
+}
+
+void Scheduler::yield(){
+  Runtime::RealLock rl;
+  preempt();
 }

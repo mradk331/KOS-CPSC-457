@@ -69,8 +69,8 @@ namespace Runtime {
 
   struct RealLock {
     RealLock() { LocalProcessor::lock(true); }    // disable IRQs
-    // destructor not needed
-  };
+    ~RealLock() { LocalProcessor::unlock(true); } // deflate lock count, enable IRQs
+ };
 
   /**** AddressSpace-related interface ****/
 

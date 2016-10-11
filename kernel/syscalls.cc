@@ -21,6 +21,8 @@
 #include "kernel/Process.h"
 #include "world/Access.h"
 #include "machine/Processor.h"
+#include "machine/Machine.h"
+
 
 #include "syscalls.h"
 #include "pthread.h"
@@ -113,6 +115,11 @@ extern "C" off_t lseek(int fildes, off_t offset, int whence) {
   ssize_t ret = access->lseek(offset, whence);
   p.ioHandles.done(fildes);
   return ret;
+}
+
+/* I have added a system call here - Priyaa */
+extern "C" long get_core_count(){
+	return Machine::getProcessorCount();
 }
 
 extern "C" pid_t getpid() {
@@ -244,6 +251,7 @@ static const syscall_t syscalls[] = {
   syscall_t(read),
   syscall_t(write),
   syscall_t(lseek),
+  syscall_t(get_core_count),
   syscall_t(getpid),
   syscall_t(getcid),
   syscall_t(usleep),

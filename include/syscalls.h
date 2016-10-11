@@ -17,6 +17,8 @@ extern "C" int munmap(void* addr, size_t len);
 
 extern "C" pid_t getcid();
 
+extern "C" long get_core_count();
+
 extern "C" int privilege(void*, mword, mword, mword, mword);
 
 namespace SyscallNum {
@@ -28,6 +30,7 @@ enum : mword {
   read,
   write,
   lseek,
+  get_core_count,
   getpid,
   getcid,
   usleep,

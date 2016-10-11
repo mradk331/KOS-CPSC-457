@@ -15,6 +15,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ******************************************************************************/
 #include "syscalls.h"
+#include "kostypes.h"
 
 #include <string.h>
 
@@ -68,6 +69,11 @@ extern "C" ssize_t write(int fildes, const void* buf, size_t nbyte) {
 extern "C" off_t lseek(int fildes, off_t offset, int whence) {
   ssize_t ret = syscallStub(SyscallNum::lseek, fildes, offset, whence);
   if (ret < 0) { *__errno() = -ret; return -1; } else return ret;
+}
+
+/*added by Priyaa*/
+extern "C" long get_core_count() {
+  return syscallStub(SyscallNum::get_core_count);
 }
 
 extern "C" pid_t getpid() {

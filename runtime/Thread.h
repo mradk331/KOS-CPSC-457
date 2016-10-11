@@ -33,6 +33,9 @@ class Thread : public EmbeddedList<Thread>::Link {
 
   mword priority;           // scheduling priority
   bool affinity;            // stick with scheduler
+  cpu_set_t affinityMask;	 	 // stick with multiple schedulers
+  // affinity mask of 0 means that the thread can be scheduled on any processor
+
   Scheduler* nextScheduler; // resume on same core (for now)
 
   Runtime::MachContext ctx;
@@ -47,7 +50,7 @@ protected:
 
   Thread(vaddr sb, size_t ss) :
     stackPointer(vaddr(this)), stackBottom(sb), stackSize(ss),
-    priority(defPriority), affinity(false), nextScheduler(nullptr),
+    priority(defPriority), affinity(false), affinityMask(0), nextScheduler(nullptr),
     state(Running), unblockInfo(nullptr) {}
 
   // called directly when creating idle thread(s)
@@ -81,6 +84,10 @@ public:
   }
 
   Thread* setPriority(mword p)      { priority = p; return this; }
+
+  void   setAffinityMask( cpu_set_t mask ) { affinityMask = mask; }
+  cpu_set_t  getAffinityMask() { return affinityMask; }
+
   Thread* setAffinity(Scheduler* s) { affinity = (nextScheduler = s); return this; }
   Scheduler* getAffinity() const    { return affinity ? nextScheduler : nullptr; }
 
