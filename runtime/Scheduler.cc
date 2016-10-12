@@ -1,5 +1,5 @@
 /******************************************************************************
-    Copyright © 2012-2015 Martin Karsten
+    Copyright ï¿½ 2012-2015 Martin Karsten
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -134,7 +134,37 @@ void Scheduler::preempt() {               // IRQs disabled, lock count inflated
       * specified target's ready queue
       */
 
-   }
+      mword proc = 0;
+      mword procCount = Machine::getProcessorCount();
+
+      Scheduler * best;
+      mword bestReady = -1;
+      while (proc < procCount)
+      {
+        if (affinityMask & 1)
+        {
+          Scheduler * scheduler = Machine::getScheduler(proc);
+          if (scheduler)
+          {
+            mword nextReady = scheduler->readyCount;
+            if (nextReady > bestReady)
+            {
+              best = scheduler;
+              bestReady = nextReady;
+            }
+          }
+        }
+        affinityMask >>= 1;
+        proc++;
+      }
+
+      if (best == nullptr)
+      {
+        // error
+      }
+
+      target = best;
+    }
 
 #if TESTING_ALWAYS_MIGRATE
   if (!target) target = partner;
