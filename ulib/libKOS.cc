@@ -1,5 +1,5 @@
 /******************************************************************************
-    Copyright © 2012-2015 Martin Karsten
+    Copyright ï¿½ 2012-2015 Martin Karsten
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -20,6 +20,19 @@
 #include <string.h>
 
 int signum = 0;
+
+
+//Declaring stubs for the schedule affinity setter and getter
+extern "C" int sched_setaffinity(pid_t pid, size_t cpusetsize, cpu_set_t *mask) {
+	//Implemented function returned below
+	return syscallStub(SyscallNum::sched_setaffinity);
+}
+
+
+extern "C" int sched_getaffinity(pid_t pid, size_t cpusetsize, cpu_set_t *mask) {
+	return syscallStub(SyscallNum::sched_getaffinity);
+}
+
 
 extern "C" void _KOS_sigwrapper();
 

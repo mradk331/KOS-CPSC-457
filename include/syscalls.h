@@ -12,6 +12,13 @@
 #define STDDBG_FILENO 3
 
 #define MAP_FAILED  ((void *) -1)
+
+
+//Declaring setter and getter for the schedule affinity system calls
+extern "C" int sched_setaffinity(pid_t pid, size_t cpusetsize, cpu_set_t *mask);
+extern "C" int sched_getaffinity(pid_t pid, size_t cpusetsize, cpu_set_t *mask);
+
+
 extern "C" void* mmap(void* addr, size_t len, int prot, int flags, int filedes, off_t off);
 extern "C" int munmap(void* addr, size_t len);
 
@@ -24,9 +31,12 @@ extern "C" int privilege(void*, mword, mword, mword, mword);
 namespace SyscallNum {
 
 enum : mword {
+
   _exit = 0,
   open,
   close,
+  sched_setaffinity,
+  sched_getaffinity,
   read,
   write,
   lseek,
