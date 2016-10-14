@@ -123,16 +123,14 @@ extern "C" long get_core_count(){
 }
 
 extern "C" int sched_setaffinity(pid_t pid, size_t cpusetsize, cpu_set_t *mask) {
-
-
-
-}
-extern "C" int sched_getaffinity(pid_t pid, size_t cpusetsize, cpu_set_t *mask)
-{
-
+	// TODO write implementation
+	return 0;
 }
 
-
+extern "C" int sched_getaffinity(pid_t pid, size_t cpusetsize, cpu_set_t *mask) {
+	// TODO write implementation
+	return 0;
+}
 
 extern "C" pid_t getpid() {
   return CurrProcess().getID();
