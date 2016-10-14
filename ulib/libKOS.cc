@@ -21,18 +21,15 @@
 
 int signum = 0;
 
-
-//Declaring stubs for the schedule affinity setter and getter
-extern "C" int sched_setaffinity(pid_t pid, size_t cpusetsize, cpu_set_t *mask) {
-	//Implemented function returned below
-	return syscallStub(SyscallNum::sched_setaffinity);
+extern "C" int sched_setaffinity(pid_t pid, size_t cpusetsize, cpu_set_t * mask) {
+  ssize_t ret = syscallStub(SyscallNum::sched_setaffinity, mword(pid), mword(cpusetsize), mword(mask));
+  if (ret < 0) {*__errno() = -ret; return -1; } else return ret;
 }
 
-
-extern "C" int sched_getaffinity(pid_t pid, size_t cpusetsize, cpu_set_t *mask) {
-	return syscallStub(SyscallNum::sched_getaffinity);
+extern "C" int sched_getaffinity(pid_t pid, size_t cpusetsize, cpu_set_t * mask) {
+  ssize_t ret = syscallStub(SyscallNum::sched_getaffinity, mword(pid), mword(cpusetsize), mword(mask));
+  if (ret < 0) {*__errno() = -ret; return -1; } else return ret;
 }
-
 
 extern "C" void _KOS_sigwrapper();
 
