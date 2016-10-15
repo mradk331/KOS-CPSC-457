@@ -123,12 +123,72 @@ extern "C" long get_core_count(){
 }
 
 extern "C" int sched_setaffinity(pid_t pid, size_t cpusetsize, cpu_set_t *mask) {
-	// TODO write implementation
+
+  cpu_set_t tmpMask;
+  mword maskProcessorCount = 0;
+  mword processorCount;
+
+
+  //Check if pid is 0, if not set proper error value
+  if (pid != 0) {
+    
+    return -EPERM;
+  }
+
+  tmpMask = *mask;
+  
+  //Obtain the number of processors given by the affinity mask
+  while (tmpMask != 0) {
+
+    tmpMask = tmpMask >> 1;
+    maskProcessorCount++;
+
+  } 
+
+  processorCount = Machine::getProcessorCount();
+
+  //Set proper error if mask count is greater than the processor count
+  if (maskProcessorCount > processorCount) {
+    return -EINVAL;
+    
+  } 
+
+  //Get the thread object
+  Thread* thread = LocalProcessor::getCurrThread();
+
+  //Set the affinity mask using the thread object
+  thread -> setAffinityMask(*mask);
+
+  //Get the scheduler object
+  Scheduler* sched = LocalProcessor::getScheduler();
+
+  //Use the scheduler object to invoke enqueue and set the
+  //thread to the ready queue of that scheduler
+  //sched -> enqueue(*thread);
+
+  //Invoke yield to call the preempt routine so that current thread
+  //is rescheduled to run on the correct processor
+  sched -> yield();
+
+
 	return 0;
 }
 
 extern "C" int sched_getaffinity(pid_t pid, size_t cpusetsize, cpu_set_t *mask) {
-	// TODO write implementation
+	
+  if (pid != 0) {
+
+    return -EPERM;
+
+  }
+
+  else {
+
+    Thread* thread =  LocalProcessor::getCurrThread();     
+
+    //Get the 
+    *mask = thread -> getAffinityMask();
+  }
 	return 0;
 }
 
