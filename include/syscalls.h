@@ -35,12 +35,9 @@ enum : mword {
   _exit = 0,
   open,
   close,
-  sched_setaffinity,
-  sched_getaffinity,
   read,
   write,
   lseek,
-  get_core_count,
   getpid,
   getcid,
   usleep,
@@ -57,6 +54,9 @@ enum : mword {
   semV,
   privilege,
   _init_sig_handler,
+  sched_setaffinity,
+  sched_getaffinity,
+    get_core_count,
   max
 };
 

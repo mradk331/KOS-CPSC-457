@@ -21,16 +21,6 @@
 
 int signum = 0;
 
-extern "C" int sched_setaffinity(pid_t pid, size_t cpusetsize, cpu_set_t * mask) {
-  ssize_t ret = syscallStub(SyscallNum::sched_setaffinity, mword(pid), mword(cpusetsize), mword(mask));
-  if (ret < 0) {*__errno() = -ret; return -1; } else return ret;
-}
-
-extern "C" int sched_getaffinity(pid_t pid, size_t cpusetsize, cpu_set_t * mask) {
-  ssize_t ret = syscallStub(SyscallNum::sched_getaffinity, mword(pid), mword(cpusetsize), mword(mask));
-  if (ret < 0) {*__errno() = -ret; return -1; } else return ret;
-}
-
 extern "C" void _KOS_sigwrapper();
 
 extern "C" void _KOS_sighandler(mword s) {
@@ -51,6 +41,19 @@ extern "C" void* _realloc_r(_reent* r, void* ptr, size_t size) { return realloc(
 extern "C" void _exit(int) {
   syscallStub(SyscallNum::_exit);
   for (;;); // never reached...
+}
+
+extern "C" int sched_setaffinity(pid_t pid, size_t cpusetsize, cpu_set_t * mask) {
+  return syscallStub(SyscallNum::sched_setaffinity, pid, cpusetsize, mword(mask));
+}
+
+extern "C" int sched_getaffinity(pid_t pid, size_t cpusetsize, cpu_set_t * mask) {
+  ssize_t ret = syscallStub(SyscallNum::sched_getaffinity, pid, cpusetsize, mword(mask));
+  if (ret < 0) {*__errno() = -ret; return -1; } else return ret;
+}
+
+extern "C" long get_core_count() {
+  return syscallStub(SyscallNum::get_core_count);
 }
 
 extern "C" int open(const char *path, int oflag, ...) {
@@ -79,11 +82,6 @@ extern "C" ssize_t write(int fildes, const void* buf, size_t nbyte) {
 extern "C" off_t lseek(int fildes, off_t offset, int whence) {
   ssize_t ret = syscallStub(SyscallNum::lseek, fildes, offset, whence);
   if (ret < 0) { *__errno() = -ret; return -1; } else return ret;
-}
-
-/*added by Priyaa*/
-extern "C" long get_core_count() {
-  return syscallStub(SyscallNum::get_core_count);
 }
 
 extern "C" pid_t getpid() {
