@@ -44,9 +44,8 @@ inline void Scheduler::switchThread(Scheduler* target, Args&... a) {
   CHECK_LOCK_MIN(sizeof...(Args));
   Thread* nextThread;
   readyLock.acquire();
-//  for (mword i = 0; i < (target ? idlePriority : maxPriority); i += 1) {
-  for (mword i = 0; i < ((target == this) ? idlePriority : maxPriority);
-i += 1) {
+  // for (mword i = 0; i < (target ? idlePriority : maxPriority); i += 1) {
+  for (mword i = 0; i < ((target == this) ? idlePriority : maxPriority); i ++) {
     if (!readyQueue[i].empty()) {
       nextThread = readyQueue[i].pop_front();
       readyCount -= 1;
@@ -113,58 +112,36 @@ void Scheduler::resume(Thread& t) {
   else Runtime::getScheduler()->enqueue(t);
 }
 
-
-
 void Scheduler::preempt() {               // IRQs disabled, lock count inflated
 #if TESTING_NEVER_MIGRATE
   switchThread(this);
 #else /* migration enabled */
-  //Scheduler* target =  Runtime::getCurrThread()->getAffinity();
+  //Scheduler* target = Runtime::getCurrThread()->getAffinity();
   Scheduler *target = nullptr;
-  mword affinityMask = Runtime::getCurrThread()->getAffinityMask();
+  cpu_set_t affinityMask = LocalProcessor::getCurrThread()->getAffinityMask();
 
-  if( affinityMask == 0 ) {
-	  /* use Martin's code when no affinity is set via bit mask */
-	  target =  Runtime::getCurrThread()->getAffinity();
-   }  else {
-	  /* CPSC457l: Add code here to scan the affinity mask
-      * and select the processor with the smallest ready count.
-      * Set the scheduler of the selected processor as target
-      * switchThread(target) migrates the current thread to
-      * specified target's ready queue
-      */
+  if (!affinityMask) {
+    target = LocalProcessor::getCurrThread()->getAffinity();
+  } else {
+    mword procCount = Machine::getProcessorCount();
 
-      mword proc = 0;
-      mword procCount = Machine::getProcessorCount();
+    mword bestReady = 2147483647;
+     for (mword i = 0; i < procCount; i++) {
+  		if (affinityMask & (1 << i)) {
+        Scheduler * scheduler = Machine::getScheduler(i);
+        if (scheduler) {
+          mword nextReady = scheduler->readyCount;
 
-      Scheduler * best;
-      mword bestReady = -1;
-      while (proc < procCount)
-      {
-        if (affinityMask & 1)
-        {
-          Scheduler * scheduler = Machine::getScheduler(proc);
-          if (scheduler)
-          {
-            mword nextReady = scheduler->readyCount;
-            if (nextReady > bestReady)
-            {
-              best = scheduler;
-              bestReady = nextReady;
-            }
+          if (nextReady < bestReady) {
+
+            target = scheduler;
+            bestReady = nextReady;
+
           }
         }
-        affinityMask >>= 1;
-        proc++;
       }
-
-      if (best == nullptr)
-      {
-        // error
-      }
-
-      target = best;
     }
+  }
 
 #if TESTING_ALWAYS_MIGRATE
   if (!target) target = partner;

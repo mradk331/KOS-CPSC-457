@@ -23,7 +23,6 @@
 #include "machine/Processor.h"
 #include "machine/Machine.h"
 
-
 #include "syscalls.h"
 #include "pthread.h"
 
@@ -72,6 +71,37 @@ extern "C" void _exit(int) {
   CurrProcess().exit();
 }
 
+extern "C" int sched_setaffinity(pid_t pid, size_t cpusetsize, cpu_set_t * mask) {
+
+  if (((*mask) >= (1 << Machine::getProcessorCount())) || cpusetsize != sizeof(cpu_set_t))
+  {
+    *__errno() = EINVAL;
+    return -1;
+  } else if (pid != 0) {
+    *__errno() = EPERM;
+    return -1;
+  }
+
+  Thread * curr = LocalProcessor::getCurrThread();
+
+  curr->setAffinityMask(*mask);
+  return 0;
+}
+
+extern "C" int sched_getaffinity(pid_t pid, size_t cpusetsize, cpu_set_t * mask) {
+  if (pid != 0)
+  {
+    return -EPERM;
+  }
+  *mask = LocalProcessor::getCurrThread()->getAffinityMask();
+  return 0;
+}
+
+/* I have added a system call here - Priyaa */
+extern "C" long get_core_count(){
+	return Machine::getProcessorCount();
+}
+
 extern "C" int open(const char *path, int oflag, ...) {
   Process& p = CurrProcess();
   auto it = kernelFS.find(path);
@@ -115,81 +145,6 @@ extern "C" off_t lseek(int fildes, off_t offset, int whence) {
   ssize_t ret = access->lseek(offset, whence);
   p.ioHandles.done(fildes);
   return ret;
-}
-
-/* I have added a system call here - Priyaa */
-extern "C" long get_core_count(){
-	return Machine::getProcessorCount();
-}
-
-extern "C" int sched_setaffinity(pid_t pid, size_t cpusetsize, cpu_set_t *mask) {
-
-  cpu_set_t tmpMask;
-  mword maskProcessorCount = 0;
-  mword processorCount;
-
-
-  //Check if pid is 0, if not set proper error value
-  if (pid != 0) {
-    
-    return -EPERM;
-  }
-
-  tmpMask = *mask;
-  
-  //Obtain the number of processors given by the affinity mask
-  while (tmpMask != 0) {
-
-    tmpMask = tmpMask >> 1;
-    maskProcessorCount++;
-
-  } 
-
-  processorCount = Machine::getProcessorCount();
-
-  //Set proper error if mask count is greater than the processor count
-  if (maskProcessorCount > processorCount) {
-    return -EINVAL;
-    
-  } 
-
-  //Get the thread object
-  Thread* thread = LocalProcessor::getCurrThread();
-
-  //Set the affinity mask using the thread object
-  thread -> setAffinityMask(*mask);
-
-  //Get the scheduler object
-  Scheduler* sched = LocalProcessor::getScheduler();
-
-  //Use the scheduler object to invoke enqueue and set the
-  //thread to the ready queue of that scheduler
-  //sched -> enqueue(*thread);
-
-  //Invoke yield to call the preempt routine so that current thread
-  //is rescheduled to run on the correct processor
-  sched -> yield();
-
-
-	return 0;
-}
-
-extern "C" int sched_getaffinity(pid_t pid, size_t cpusetsize, cpu_set_t *mask) {
-	
-  if (pid != 0) {
-
-    return -EPERM;
-
-  }
-
-  else {
-
-    Thread* thread =  LocalProcessor::getCurrThread();     
-
-    //Get the 
-    *mask = thread -> getAffinityMask();
-  }
-	return 0;
 }
 
 extern "C" pid_t getpid() {
@@ -321,9 +276,6 @@ static const syscall_t syscalls[] = {
   syscall_t(read),
   syscall_t(write),
   syscall_t(lseek),
-  syscall_t(get_core_count),
-  syscall_t(sched_setaffinity),
-  syscall_t(sched_getaffinity),
   syscall_t(getpid),
   syscall_t(getcid),
   syscall_t(usleep),
@@ -339,7 +291,10 @@ static const syscall_t syscalls[] = {
   syscall_t(semP),
   syscall_t(semV),
   syscall_t(privilege),
-  syscall_t(_init_sig_handler)
+  syscall_t(_init_sig_handler),
+  syscall_t(sched_setaffinity),
+  syscall_t(sched_getaffinity),
+  syscall_t(get_core_count)
 };
 
 static_assert(sizeof(syscalls)/sizeof(syscall_t) == SyscallNum::max, "syscall list error");
