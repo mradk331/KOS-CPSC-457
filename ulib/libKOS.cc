@@ -43,6 +43,8 @@ extern "C" void _exit(int) {
   for (;;); // never reached...
 }
 
+
+//Below are the stubs for our set affinity functions
 extern "C" int sched_setaffinity(pid_t pid, size_t cpusetsize, cpu_set_t * mask) {
   return syscallStub(SyscallNum::sched_setaffinity, pid, cpusetsize, mword(mask));
 }

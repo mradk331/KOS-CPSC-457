@@ -123,15 +123,25 @@ void Scheduler::preempt() {               // IRQs disabled, lock count inflated
   if (!affinityMask) {
     target = LocalProcessor::getCurrThread()->getAffinity();
   } else {
-    mword procCount = Machine::getProcessorCount();
 
+    //OBtain the processor count
+    mword procCount = Machine::getProcessorCount();
+    //Initialize var that will contain lowest number of processes in ready queue
     mword bestReady = 2147483647;
+
+     //For loop to get the lowest number of processes in the ready count queue
      for (mword i = 0; i < procCount; i++) {
+		
+		//If processor core given in affinity mask, get scheduler for it
   		if (affinityMask & (1 << i)) {
         Scheduler * scheduler = Machine::getScheduler(i);
+
+	//If scheduler exists get the the ready count for that specific core
         if (scheduler) {
           mword nextReady = scheduler->readyCount;
 
+	  //Compare current ready queue count with the one of the next processor
+	  //if next has a lower ready queue count, set the target variable to that scheduler
           if (nextReady < bestReady) {
 
             target = scheduler;

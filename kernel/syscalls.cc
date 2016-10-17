@@ -71,20 +71,28 @@ extern "C" void _exit(int) {
   CurrProcess().exit();
 }
 
+//Added functions that set and get the scheduler affinity mask
 extern "C" int sched_setaffinity(pid_t pid, size_t cpusetsize, cpu_set_t * mask) {
 
+  //Check that the provided processor count size is not greater than the actual processor count
   if (((*mask) >= (1 << Machine::getProcessorCount())) || cpusetsize != sizeof(cpu_set_t))
   {
+    //Throw an error indicating affinity mask contains processors that are not currently in the system
     *__errno() = EINVAL;
     return -1;
+
+    //Throw an error if calling processor does not have appropriate privileges
   } else if (pid != 0) {
     *__errno() = EPERM;
     return -1;
   }
 
+  //Get current thread
   Thread * curr = LocalProcessor::getCurrThread();
 
+  //Set the affinity mask to the provided bit mask value
   curr->setAffinityMask(*mask);
+
   return 0;
 }
 
@@ -93,6 +101,8 @@ extern "C" int sched_getaffinity(pid_t pid, size_t cpusetsize, cpu_set_t * mask)
   {
     return -EPERM;
   }
+
+  //Get affinity mask from the current running thread
   *mask = LocalProcessor::getCurrThread()->getAffinityMask();
   return 0;
 }
