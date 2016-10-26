@@ -11,7 +11,9 @@ SRC=$(wildcard *.cc)
 OBJ=$(SRC:%.cc=%.o)
 EXE=$(SRC:%.cc=exec/%)
 
-all: $(EXE) exec/motb
+
+#Adds executables when make building 
+all: $(EXE) exec/motb exec/schedparam
 
 .PHONY: .FORCE
 
@@ -32,6 +34,17 @@ exec/motb: .FORCE
 	@echo >> $@
 	@echo -n "Build Date: " >> $@
 	@date >> $@
+	@echo >> $@
+
+#Example values below
+#TODO: Insert actual values needed
+exec/schedparam: .FORCE
+	@echo creating $@
+	@mkdir -p exec
+	@echo > $@
+	@echo "mingranularity 4" >> $@
+	@echo >> $@
+	@echo "epochlen 20" >> $@
 	@echo >> $@
 
 echo:

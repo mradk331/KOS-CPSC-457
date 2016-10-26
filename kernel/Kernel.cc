@@ -41,6 +41,10 @@ static void keybLoop() {
 void kosMain() {
   KOUT::outl("Welcome to KOS!", kendl);
   auto iter = kernelFS.find("motb");
+
+  //Searching and assigning schedparam file to iter2
+  auto schedParam = kernelFS.find("schedparam");
+
   if (iter == kernelFS.end()) {
     KOUT::outl("motb information not found");
   } else {
@@ -52,6 +56,23 @@ void kosMain() {
     }
     KOUT::outl();
   }
+  
+  //Accessing schedParam file and printing the contents to
+  //boot screen given the file exists and is not empty
+  if (schedParam == kernelFS.end()) {	
+    KOUT::outl("schedparam file not found");
+  }
+
+  else {
+    FileAccess f(schedParam->second);
+    for (;;) {
+      char c;
+      if (f.read(&c, 1) == 0) break;
+      KOUT::out1(c);
+    }
+    KOUT::outl();
+  }
+
 #if TESTING_TIMER_TEST
   StdErr.print(" timer test, 3 secs...");
   for (int i = 0; i < 3; i++) {
