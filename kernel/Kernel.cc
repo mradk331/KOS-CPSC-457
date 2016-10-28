@@ -1,5 +1,5 @@
 /******************************************************************************
-    Copyright © 2012-2015 Martin Karsten
+    Copyright ï¿½ 2012-2015 Martin Karsten
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -23,6 +23,11 @@
 #include "devices/Keyboard.h"
 
 #include "main/UserMain.h"
+
+#include <string>
+#include <iostream>
+
+using namespace std;
 
 AddressSpace kernelSpace(true); // AddressSpace.h
 volatile mword Clock::tick;     // Clock.h
@@ -56,20 +61,44 @@ void kosMain() {
     }
     KOUT::outl();
   }
-  
+
   //Accessing schedParam file and printing the contents to
   //boot screen given the file exists and is not empty
-  if (schedParam == kernelFS.end()) {	
+  if (schedParam == kernelFS.end()) {
     KOUT::outl("schedparam file not found");
   }
 
   else {
+
+    //Array holds contents of schedParam
+    char schedParamArray[100];
+    int counter = 0;
+
     FileAccess f(schedParam->second);
     for (;;) {
       char c;
       if (f.read(&c, 1) == 0) break;
-      KOUT::out1(c);
+
+      //Get character input from schedParam into array
+      schedParamArray[counter] = c;
+      counter++;
+
+      //TODO: Parse mingranularity and epochlen values into Scheduler.cc
+      //before printing schedparam content to boot screen below
+
+      //Printing contents of schedParam onto boot screen (commented out temporarily)
+      //KOUT::out1(c);
     }
+
+    //Print out contents of array (This is to check they are correct)
+    //(CODE BELOW NOT NEEDED FOR ACTUAL IMPLEMENTATION)
+    schedParamArray[counter] = '\0';
+    int n = 0;
+    while (schedParamArray[n] != '\0') {
+
+    KOUT::out1(schedParamArray[n]);
+    n++;
+  }
     KOUT::outl();
   }
 

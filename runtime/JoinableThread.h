@@ -1,5 +1,5 @@
 /******************************************************************************
-    Copyright © 2012-2014 Martin Karsten
+    Copyright ï¿½ 2012-2014 Martin Karsten
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -18,8 +18,8 @@
 #define _JoinableThread_h_ 1
 
 #include "generic/Buffers.h"
-#include "runtime/SyncQueues.h" 
-#include "runtime/Thread.h" 
+#include "runtime/SyncQueues.h"
+#include "runtime/Thread.h"
 
 class JoinableThread : public Thread {
   Condition wait;
