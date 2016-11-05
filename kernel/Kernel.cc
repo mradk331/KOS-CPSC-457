@@ -23,9 +23,12 @@
 #include "devices/Keyboard.h"
 
 #include "main/UserMain.h"
+#include "runtime/Scheduler.h"
 
 #include <string>
 #include <iostream>
+#include <cctype>
+
 
 using namespace std;
 
@@ -82,24 +85,65 @@ void kosMain() {
       //Get character input from schedParam into array
       schedParamArray[counter] = c;
       counter++;
-
-      //TODO: Parse mingranularity and epochlen values into Scheduler.cc
-      //before printing schedparam content to boot screen below
-
-      //Printing contents of schedParam onto boot screen (commented out temporarily)
-      //KOUT::out1(c);
     }
 
-    //Print out contents of array (This is to check they are correct)
-    //(CODE BELOW NOT NEEDED FOR ACTUAL IMPLEMENTATION)
+    //Adds null to indicated end of array
     schedParamArray[counter] = '\0';
+
     int n = 0;
+    int minGranularity = 0;
+    int epochLen = 0;
+    int intStorage = 0;
+
+    //initially set to false
+    int trueInt = 0;
+
+    //Mike did this O(n^3) beauty
+    //Cycle through the array until the parameter numbers are
+    //obtained
     while (schedParamArray[n] != '\0') {
 
-    KOUT::out1(schedParamArray[n]);
-    n++;
-  }
+      //Check if the char in the array is a digit and
+      //if the first parameter hasn't been already obtained
+      if (isdigit(schedParamArray[n]) && trueInt == 0) {
+
+        //Loop through until the first full integer has been obtained
+        while (isdigit(schedParamArray[n])) {
+
+          intStorage = schedParamArray[n]; //Obtain the ascii value
+          intStorage = intStorage - 48;    //Converts ascii value to int
+
+          minGranularity = minGranularity * 10; //Combines multiple int to single int
+          minGranularity = minGranularity + intStorage;
+
+          n++;
+        }
+        trueInt = 1; //Set to true -> first param obtained
+        intStorage = 0; //Reset value to 0
+      }
+
+      while (isdigit(schedParamArray[n])) {
+
+        intStorage = schedParamArray[n] - 48;
+
+        epochLen = epochLen * 10;
+        epochLen = epochLen + intStorage;
+
+        n++;
+      }
+      n++;
+    }
+
+    setSchedParameters(minGranularity, epochLen);
+
+    //Printing parameters to boot screen
+    for (int i = 0; i < strlen(schedParamArray); i++) {
+
+      KOUT::out1(schedParamArray[i]);
+
+    }
     KOUT::outl();
+
   }
 
 #if TESTING_TIMER_TEST

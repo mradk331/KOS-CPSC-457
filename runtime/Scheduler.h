@@ -1,5 +1,5 @@
 /******************************************************************************
-    Copyright © 2012-2015 Martin Karsten
+    Copyright ï¿½ 2012-2015 Martin Karsten
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -22,13 +22,16 @@
 
 class Thread;
 
+//Declaring function
+extern "C" void setSchedParameters(int mingranularity, int epochlen);
+
 class Scheduler {
   friend void Runtime::idleLoop(Scheduler*);
   bufptr_t idleStack[minimumStack];
 
   // very simple N-class prio scheduling
   BasicLock readyLock;
-  volatile mword readyCount; 
+  volatile mword readyCount;
   EmbeddedList<Thread> readyQueue[maxPriority];
   volatile mword preemption;
   volatile mword resumption;

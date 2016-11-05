@@ -20,15 +20,16 @@
 #include "runtime/Thread.h"
 #include "kernel/Output.h"
 
-
 //Global variables
 int minGranularity;
-int epochlen;
+int epochLen;
 
 //TODO: Assign the parsed parameters from Kernel.cc
-int getSchedParameters() {
+extern "C" void setSchedParameters(int mingranularity, int epochlen) {
+
   //Assign parsed parameters for global variables
-  return 0;
+  minGranularity = mingranularity;
+  epochLen = epochlen;
 
 }
 
