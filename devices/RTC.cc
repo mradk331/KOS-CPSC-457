@@ -1,5 +1,5 @@
 /******************************************************************************
-    Copyright © 2012-2015 Martin Karsten
+    Copyright ï¿½ 2012-2015 Martin Karsten
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -17,6 +17,8 @@
 #include "machine/APIC.h"
 #include "machine/Machine.h"
 #include "devices/RTC.h"
+#include "kernel/Output.h"
+#define RATE 0x03
 
 void RTC::init() { // see http://wiki.osdev.org/RTC
   Machine::registerIrqSync(PIC::RTC, 0xf8);
@@ -26,7 +28,13 @@ void RTC::init() { // see http://wiki.osdev.org/RTC
   CPU::out8(0x70, 0x0A);             // select Status Register A
   uint8_t prev = CPU::in8(0x71);     // read current value
   CPU::out8(0x70, 0x0A);             // select Status Register A
-  CPU::out8(0x71, prev | 0x06);      // set rate to 32768 / (2^(6-1)) = 1024 Hz
+  CPU::out8(0x71, prev | RATE);      // set rate to 32768 / (2^(6-1)) = 1024 Hz
+
+  //Print frequency
+  KOUT::outl();
+  KOUT::out1("RTC Frequency: ");
+  KOUT::outl(32768 >> (RATE - 1));
+
 
   CPU::out8(0x70, 0x0B);             // select Status Register B
   prev = CPU::in8(0x71);             // read current value

@@ -23,7 +23,7 @@
 class Thread;
 
 //Declaring function
-extern "C" void setSchedParameters(int mingranularity, int epochlen);
+extern "C" void setSchedParameters(mword mingranularity, mword epochlen);
 
 class Scheduler {
   friend void Runtime::idleLoop(Scheduler*);

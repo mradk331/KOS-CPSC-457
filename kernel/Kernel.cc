@@ -65,6 +65,15 @@ void kosMain() {
     KOUT::outl();
   }
 
+  //Get number of cycles per sec
+  mword a = CPU::readTSC();
+  Timeout::sleep(Clock::now() + 1000);
+  mword b = CPU::readTSC();
+  mword ticksPerSec = b-a;
+
+  //Calculate ticks per millisec
+  mword ticksPerMsec = ticksPerSec/1000;
+
   //Accessing schedParam file and printing the contents to
   //boot screen given the file exists and is not empty
   if (schedParam == kernelFS.end()) {
@@ -134,7 +143,11 @@ void kosMain() {
       n++;
     }
 
-    setSchedParameters(minGranularity, epochLen);
+    //Convert millisec values to ticks
+    mword minGranularityTicks = minGranularity * ticksPerMsec;
+    mword epochLenTicks = epochLen * ticksPerMsec;
+
+    setSchedParameters(minGranularityTicks, epochLenTicks);
 
     //Printing parameters to boot screen
     for (int i = 0; i < strlen(schedParamArray); i++) {
@@ -142,6 +155,12 @@ void kosMain() {
       KOUT::out1(schedParamArray[i]);
 
     }
+
+    KOUT::outl("Recalibrated parameters");
+    KOUT::out1("minGranularityTicks: ");
+    KOUT::outl(minGranularityTicks);
+    KOUT::out1("epochLenTicks: ");
+    KOUT::outl(epochLenTicks);
     KOUT::outl();
 
   }

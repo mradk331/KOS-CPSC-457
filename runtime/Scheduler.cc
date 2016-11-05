@@ -21,15 +21,15 @@
 #include "kernel/Output.h"
 
 //Global variables
-int minGranularity;
-int epochLen;
+mword minGranularityTicks;
+mword epochLenTicks;
 
 //TODO: Assign the parsed parameters from Kernel.cc
-extern "C" void setSchedParameters(int mingranularity, int epochlen) {
+extern "C" void setSchedParameters(mword mingranularity, mword epochlen) {
 
   //Assign parsed parameters for global variables
-  minGranularity = mingranularity;
-  epochLen = epochlen;
+  minGranularityTicks = mingranularity;
+  epochLenTicks = epochlen;
 
 }
 
