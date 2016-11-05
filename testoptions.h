@@ -8,3 +8,4 @@
 #define TESTING_STDOUT_DEBUG      1
 #define TESTING_STDERR_DEBUG      1
 #define TESTING_TIMER_TEST        1
+#define TESTING_AVL_TREE          1

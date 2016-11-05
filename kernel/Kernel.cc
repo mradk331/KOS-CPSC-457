@@ -24,6 +24,7 @@
 
 #include "main/UserMain.h"
 #include "runtime/Scheduler.h"
+#include "generic/tree.h"
 
 #include <string>
 #include <iostream>
@@ -163,7 +164,95 @@ void kosMain() {
     KOUT::outl(epochLenTicks);
     KOUT::outl();
 
+
+
   }
+
+#if TESTING_AVL_TREE
+  Tree<int> tree;
+
+  //Inserts some nodes into the tree
+  tree.insert(5);
+  tree.insert(2);
+  tree.insert(3);
+
+  /*---Test Case 1---*/
+
+  int expectedValue = 2;
+  int actualPopValue = *(tree.popMinNode());
+
+  if (expectedValue == actualPopValue) {
+    KOUT::outl("Test Case 1 Passed");
+    KOUT::outl();
+  }
+  else {
+    KOUT::outl("Test Case 1 Failed");
+    KOUT::outl();
+  }
+
+  /*---Test Case 2---*/
+  //Find 3 in the tree, if null or not there
+  //test fails
+
+  expectedValue = 3;
+  Tree<int>::node* actualFindValue = tree.find(3);
+
+  if (actualFindValue && (expectedValue == actualFindValue -> item)){
+    KOUT::outl("Test Case 2 Passed");
+    KOUT::outl();
+  }
+  else {
+    KOUT::outl("Test Case 2 Failed");
+    KOUT::outl();
+  }
+
+  /*---Test Case 3---*/
+  //Tries to find 4 (which isn't in the tree)
+  //Should return null
+
+  actualFindValue = tree.find(4);
+
+  if (!actualFindValue){
+    KOUT::outl("Test Case 3 Passed");
+    KOUT::outl();
+  }
+  else {
+    KOUT::outl("Test Case 3 Failed");
+    KOUT::outl();
+  }
+
+  /*---Test Case 4---*/
+  //Deletes node containing 3 and checks if its
+  //still there
+
+  tree.deleteNode(3);
+
+  actualFindValue = tree.find(3);
+
+  if (!actualFindValue){
+    KOUT::outl("Test Case 4 Passed");
+    KOUT::outl();
+  }
+  else {
+    KOUT::outl("Test Case 4 Failed");
+    KOUT::outl();
+  }
+
+  /*---Test Case 5---*/
+  //Tests if read min node returns the min node
+  //without removing it
+
+  if (tree.readMinNode() == tree.popMinNode()) {
+    KOUT::outl("Test Case 5 Passed");
+    KOUT::outl();
+  }
+  else {
+    KOUT::outl("Test Case 5 Failed");
+    KOUT::outl();
+  }
+
+
+#endif
 
 #if TESTING_TIMER_TEST
   StdErr.print(" timer test, 3 secs...");

@@ -18,9 +18,11 @@
 #define _Scheduler_h_ 1
 
 #include "generic/EmbeddedContainers.h"
+#include "generic/tree.h"
 #include "runtime/Runtime.h"
 
 class Thread;
+class ThreadNode;
 
 //Declaring function
 extern "C" void setSchedParameters(mword mingranularity, mword epochlen);
@@ -31,8 +33,10 @@ class Scheduler {
 
   // very simple N-class prio scheduling
   BasicLock readyLock;
+  BasicLock printLock;
+
   volatile mword readyCount;
-  EmbeddedList<Thread> readyQueue[maxPriority];
+  Tree<ThreadNode> *readyTree;
   volatile mword preemption;
   volatile mword resumption;
 
@@ -48,6 +52,8 @@ class Scheduler {
 
 public:
   Scheduler();
+
+  bool switchTest(Thread * test);
   void setPartner(Scheduler& s) { partner = &s; }
   static void resume(Thread& t);
   void preempt();

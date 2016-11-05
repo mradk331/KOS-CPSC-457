@@ -1,5 +1,5 @@
 /******************************************************************************
-    Copyright © 2012-2015 Martin Karsten
+    Copyright ï¿½ 2012-2015 Martin Karsten
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -17,7 +17,7 @@
 #ifndef _Thread_h_
 #define _Thread_h_ 1
 
-#include "generic/EmbeddedContainers.h" 
+#include "generic/EmbeddedContainers.h"
 #include "runtime/Runtime.h"
 
 class Scheduler;
@@ -25,6 +25,7 @@ class UnblockInfo;
 
 class Thread : public EmbeddedList<Thread>::Link {
   friend class Scheduler;   // Scheduler accesses many internals
+  friend class ThreadNode;
   friend void Runtime::postResume(bool, Thread&, AddressSpace&);
 
   vaddr stackPointer;       // holds stack pointer while thread inactive
@@ -32,6 +33,7 @@ class Thread : public EmbeddedList<Thread>::Link {
   size_t stackSize;         // size of allocated memory
 
   mword priority;           // scheduling priority
+  mword vRuntime;
   bool affinity;            // stick with scheduler
   Scheduler* nextScheduler; // resume on same core (for now)
 
