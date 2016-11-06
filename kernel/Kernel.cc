@@ -97,7 +97,7 @@ void kosMain() {
       counter++;
     }
 
-    //Adds null to indicated end of array
+    //Adds null to indicate end of array
     schedParamArray[counter] = '\0';
 
     int n = 0;
@@ -108,7 +108,6 @@ void kosMain() {
     //initially set to false
     int trueInt = 0;
 
-    //Mike did this O(n^3) beauty
     //Cycle through the array until the parameter numbers are
     //obtained
     while (schedParamArray[n] != '\0') {
@@ -178,7 +177,7 @@ void kosMain() {
 
   /*---Test Case 1---*/
   //Tests if minimum node was popped
-  
+
   int expectedValue = 2;
   int actualPopValue = *(tree.popMinNode());
 

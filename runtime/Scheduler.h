@@ -30,13 +30,13 @@ extern "C" void setSchedParameters(mword mingranularity, mword epochlen);
 class Scheduler {
   friend void Runtime::idleLoop(Scheduler*);
   bufptr_t idleStack[minimumStack];
+
   int totalPriorityOfTasks = 0;
-  int numberOfTasks = 0;
   mword epochLengthTicks;
   mword oneVirtualTimeUnit;
   mword virtualTimeConsumed;
   mword previousTimerInterruptTicks = 0;
-  mword minvRuntime;
+  mword minvRuntime = 0;
 
   // very simple N-class prio scheduling
   BasicLock readyLock;
@@ -53,6 +53,7 @@ class Scheduler {
   inline void switchThread(Scheduler* target, Args&... a);
 
   inline void enqueue(Thread& t);
+  void updateEpochLength();
 
   Scheduler(const Scheduler&) = delete;                  // no copy
   const Scheduler& operator=(const Scheduler&) = delete; // no assignment

@@ -1,5 +1,5 @@
 /******************************************************************************
-    Copyright © 2012-2015 Martin Karsten
+    Copyright ï¿½ 2012-2015 Martin Karsten
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -533,7 +533,7 @@ void Machine::setupIDTable() {
   for (size_t i = 0; i < MaxIrqCount; i += 1) {
     irqTable[i].ioApicAddr    = 0;
     irqTable[i].ioApicIrq     = 0;
-    irqTable[i].globalIrq     = i; 
+    irqTable[i].globalIrq     = i;
     irqTable[i].overrideFlags = 0;
   }
 
