@@ -28,6 +28,8 @@ class Thread : public EmbeddedList<Thread>::Link {
   friend class ThreadNode;
   friend void Runtime::postResume(bool, Thread&, AddressSpace&);
 
+  mword newThreadCreated = 0; // Set to a default false value
+
   vaddr stackPointer;       // holds stack pointer while thread inactive
   vaddr stackBottom;        // bottom of allocated memory for thread/stack
   size_t stackSize;         // size of allocated memory

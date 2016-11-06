@@ -177,7 +177,8 @@ void kosMain() {
   tree.insert(3);
 
   /*---Test Case 1---*/
-
+  //Tests if minimum node was popped
+  
   int expectedValue = 2;
   int actualPopValue = *(tree.popMinNode());
 

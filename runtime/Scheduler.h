@@ -30,6 +30,13 @@ extern "C" void setSchedParameters(mword mingranularity, mword epochlen);
 class Scheduler {
   friend void Runtime::idleLoop(Scheduler*);
   bufptr_t idleStack[minimumStack];
+  int totalPriorityOfTasks = 0;
+  int numberOfTasks = 0;
+  mword epochLengthTicks;
+  mword oneVirtualTimeUnit;
+  mword virtualTimeConsumed;
+  mword previousTimerInterruptTicks = 0;
+  mword minvRuntime;
 
   // very simple N-class prio scheduling
   BasicLock readyLock;

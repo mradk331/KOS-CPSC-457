@@ -50,15 +50,15 @@ class ThreadNode{
 };
 
 //Global variables
-mword minGranularityTicks;
-mword epochLenTicks;
+mword schedMinGranularityTicks;
+mword defaultEpochLengthTicks;
 
 //TODO: Assign the parsed parameters from Kernel.cc
 extern "C" void setSchedParameters(mword mingranularity, mword epochlen) {
 
   //Assign parsed parameters for global variables
-  minGranularityTicks = mingranularity;
-  epochLenTicks = epochlen;
+  schedMinGranularityTicks = mingranularity;
+  defaultEpochLengthTicks = epochlen;
 
 }
 
@@ -98,12 +98,40 @@ static inline void unlock(BasicLock &l, Args&... a) {
 void Scheduler::enqueue(Thread& t) {
   GENASSERT1(t.priority < maxPriority, t.priority);
   readyLock.acquire();
+
+
+
+  //Get priority for the current thread passed in and add it
+  //to the cumulative total of all priorities
+  if (t.newThreadCreated == 0) {
+    totalPriorityOfTasks = totalPriorityOfTasks + t.priority;
+    numberOfTasks++;
+    t.newThreadCreated = 1; //Indicates true
+
+    //vRuntime = minvRuntime;
+
+  }
+Tree<Thread*>::node* leftmostTask = tree.readMinNode();
+t.vRuntime = leftmostTask.vRuntime;
   readyTree->insert(*(new ThreadNode(&t)));
+
+  //Update the epoch length ticks after task is added to the tree
+  updateEpochLength();
+
   bool wake = (readyCount == 0);
   readyCount += 1;
   readyLock.release();
   Runtime::debugS("Thread ", FmtHex(&t), " queued on ", FmtHex(this));
   if (wake) Runtime::wakeUp(this);
+}
+
+void updateEpochLength() {
+  if (defaultEpochLengthTicks >= (numberOfTasks * schedMinGranularityTicks)) {
+    epochLengthTicks = defaultEpochLengthTicks;
+  }
+  else {
+    epochLengthTicks = numberOfTasks * schedMinGranularityTicks;
+  }
 }
 
 /***********************************
@@ -117,18 +145,36 @@ void Scheduler::preempt(){		// IRQs disabled, lock count inflated
 	//Get its target scheduler
 	Scheduler* target = currentThread->getAffinity();
 
-	//Check if the thread should move to a new scheduler
-	//(based on the affinity)
-	if(target != this && target){
-		//Switch the served thread on the target scheduler
-		switchThread(target);
-	}
+  oneVirtualTimeUnit = epochLengthTicks/totalPriorityOfTasks;
 
-	//Check if it is time to switch the thread on the current scheduler
-	if(switchTest(currentThread)){
-		//Switch the served thread on the current scheduler
-		switchThread(this);
-	}
+  mword timerInterruptTicks = CPU::readTSC();
+  mword backup = timerInterruptTicks;
+
+  timerInterruptTicks = timerInterruptTicks - previousTimerInterruptTicks;
+  previousTimerInterruptTicks = backup;
+
+  virtualTimeConsumed = (timerInterruptTicks/oneVirtualTimeUnit) * currentThread->priority;
+  currentThread->vRuntime = currentThread->vRuntime + virtualTimeConsumed;
+
+  Tree<Thread*>::node* leftmostTask = tree.readMinNode();
+
+  if (leftmostTask->vRuntime < currentThread->vRuntime) {
+
+  }
+
+
+	// //Check if the thread should move to a new scheduler
+	// //(based on the affinity)
+	// if(target != this && target){
+	// 	//Switch the served thread on the target scheduler
+	// 	switchThread(target);
+	// }
+  //
+	// //Check if it is time to switch the thread on the current scheduler
+	// if(switchTest(currentThread)){
+	// 	//Switch the served thread on the current scheduler
+	// 	switchThread(this);
+	// }
 }
 
 /***********************************
@@ -138,6 +184,7 @@ void Scheduler::preempt(){		// IRQs disabled, lock count inflated
 	one
 ***********************************/
 bool Scheduler::switchTest(Thread* t){
+
 	t->vRuntime++;
 	if (t->vRuntime % 10 == 0)
 		return true;
@@ -190,17 +237,27 @@ threadFound:
 void Scheduler::suspend(BasicLock& lk) {
   Runtime::FakeLock fl;
   switchThread(nullptr, lk);
+  //vRuntime = vRuntime - minvRuntime;
+  numberOfTasks--;
+  updateEpochLength();
 }
 
 void Scheduler::suspend(BasicLock& lk1, BasicLock& lk2) {
   Runtime::FakeLock fl;
   switchThread(nullptr, lk1, lk2);
+  //vRuntime = vRuntime - minvRuntime;
+  numberOfTasks--;
+  updateEpochLength();
 }
 
 void Scheduler::resume(Thread& t) {
   GENASSERT1(&t != Runtime::getCurrThread(), Runtime::getCurrThread());
   if (t.nextScheduler) t.nextScheduler->enqueue(t);
   else Runtime::getScheduler()->enqueue(t);
+  //vRuntime = vRuntime + minvRuntime
+  numberOfTasks++;
+  updateEpochLength();
+
 }
 
 void Scheduler::terminate() {

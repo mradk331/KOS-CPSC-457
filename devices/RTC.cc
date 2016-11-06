@@ -28,7 +28,7 @@ void RTC::init() { // see http://wiki.osdev.org/RTC
   CPU::out8(0x70, 0x0A);             // select Status Register A
   uint8_t prev = CPU::in8(0x71);     // read current value
   CPU::out8(0x70, 0x0A);             // select Status Register A
-  CPU::out8(0x71, prev | RATE);      // set rate to 32768 / (2^(6-1)) = 1024 Hz
+  CPU::out8(0x71, prev | RATE);      // set rate to 32768 / (2^(3-1)) = ~8192 Hz
 
   //Print frequency
   KOUT::outl();
